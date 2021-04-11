@@ -38,7 +38,7 @@ class ViewController: GLKViewController {
         
     @IBAction func TapAndHold(_ sender: UILongPressGestureRecognizer) {
         // Disable input if the GameDirector
-        if (!glesRenderer.box2d.dead) {
+        if (!glesRenderer.box2d.scored) {
     //        float xPos;
             let tapLocation = sender.location(in: sender.view)
             

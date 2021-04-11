@@ -55,7 +55,7 @@
 
 @property float xDir;
 @property float yDir;
-@property bool dead;
+@property bool scored;
 @property (nonatomic) Ball * ball;
 
 // @property b2Vec2 _targetVector;
@@ -72,7 +72,7 @@
 -(void) InitiateNewJump:(float)posX:(float)posY;
 -(void) UpdateJumpTarget:(float)posX:(float)posY;
 -(void) LaunchJump;
-
+-(void) Reset;
 
 @end
 

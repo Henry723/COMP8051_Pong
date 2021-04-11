@@ -19,7 +19,7 @@
 
 @interface Ball : NSObject{}
 @property (nonatomic, readwrite) float posX, posY;
-@property (nonatomic, readwrite)bool dead, initialJump;
+@property (nonatomic, readwrite)bool scored, initialJump;
 
 -(void)updatePos:(float)positionX:(float)positionY;
 -(void)dealloc;

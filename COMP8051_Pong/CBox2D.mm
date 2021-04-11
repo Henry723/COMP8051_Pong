@@ -90,7 +90,7 @@ public:
 @implementation CBox2D
 
 @synthesize xDir, yDir;
-@synthesize dead;
+@synthesize scored;
 @synthesize ball;
 
 - (instancetype)init
@@ -227,9 +227,11 @@ public:
         ballLaunched = false;
     }
 
-    //in case the player is already dead, therefore dont update playerposition
-    if(!dead){
+    //in case the ball is not scored on either end, therefore dont update playerposition
+    if(!scored){
         [ball updatePos:theBall->GetPosition().x :theBall->GetPosition().y];
+    } else {
+        [self Reset];
     }
     // Check if it is time yet to drop the brick, and if so
     //  call SetAwake()
@@ -238,10 +240,10 @@ public:
         theLeftWall->SetAwake(true);
     
     if(ballHitLeftWall){
-        world->DestroyBody(theBall);
-        theBall = NULL;
+        //world->DestroyBody(theBall);
+        //theBall = NULL;
         ballHitLeftWall = false;
-        dead = true;
+        scored = true;
     }
     
     // If the last collision test was positive,
@@ -254,7 +256,7 @@ public:
     if(theObstacle)
         theObstacle->SetAwake(true);
 
-    //Makes the ground and roof in sync of viewport
+    //Makes the ground and roof in the viewport
     if (theGround){
         theGround->SetTransform(b2Vec2(400,0), theGround->GetAngle());
         theGround->SetAwake(true);
@@ -389,6 +391,15 @@ public:
 {
     // Set some flag here for processing later...
     ballLaunched = true;
+}
+
+//if the ball hits any end goal, the ball and the both paddles should be centered on their initial location.
+-(void)Reset
+{
+    scored = false;
+    theBall->SetLinearVelocity(b2Vec2(0,0));
+    theBall->SetTransform(b2Vec2(BALL_POS_X,BALL_POS_Y), theBall->GetAngle());
+    theBall->SetAwake(true);
 }
 
 -(void *)GetObjectPositions
