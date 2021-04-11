@@ -17,7 +17,6 @@
 #define SCREEN_BOUNDS_Y        600
 
 // Physics & Game-Speed Parameters
-#define JUMP_MAGNITUDE         400
 #define GRAVITY                0
 #define REFRESH_RATE           0.05/60
 
@@ -36,8 +35,9 @@
 #define BALL_POS_X             SCREEN_BOUNDS_X/2
 #define BALL_POS_Y             SCREEN_BOUNDS_Y/2
 #define BALL_RADIUS            20.0f
-#define BALL_VELOCITY          100000.0f
+#define BALL_VELOCITY          400.0f
 #define BALL_SPHERE_SEGS       128
+#define VELOCITY_INCREASE      10000.0f
 #define GROUND_ROOF_PADDING    10.0f
 #define GROUND_ROOF_POS_X      400
 #define GROUND_ROOF_WIDTH      800.0f

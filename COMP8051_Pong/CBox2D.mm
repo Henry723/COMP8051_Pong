@@ -48,16 +48,18 @@ public:
                 UserData* bodyData = (UserData*)(bodyA->GetUserData());
                 CBox2D *parentObj = bodyData->box2D;
                 // Call RegisterHit (assume CBox2D object is in user data)
-                if([bodyData->objectName isEqualToString:@"Obstacle"]){
-                    [parentObj RegisterHit:@"Obstacle"];    // assumes RegisterHit is a callback function to register collision
+                if([bodyData->objectName isEqualToString:@"LeftPaddle"]){
+                    [parentObj RegisterHit:@"LeftPaddle"];    // assumes RegisterHit is a callback function to register collision
+                }
+                if([bodyData->objectName isEqualToString:@"RightPaddle"]){
+                    [parentObj RegisterHit:@"RightPaddle"];    // assumes RegisterHit is a callback function to register collision
                 }
                 if([bodyData->objectName isEqualToString:@"LeftWall"]){
                     [parentObj RegisterHit:@"LeftWall"];    // call registerhit to signal that left wall was hit
                 }
-                if([bodyData->objectName isEqualToString:@"Ground"]){
-                    [parentObj RegisterHit:@"Ground"];    // call registerhit to signal that left wall was hit
+                if([bodyData->objectName isEqualToString:@"RightWall"]){
+                    [parentObj RegisterHit:@"RightWall"];    // call registerhit to signal that right wall was hit
                 }
-                
             }
         }
     }
@@ -81,8 +83,8 @@ public:
     CGFloat width, height;
     float totalElapsedTime;
     // You will also need some extra variables here for the logic
-    bool ballHitLeftWall;
-    bool ballHitObstacle;
+    bool ballHitLeftWall, ballHitRightWall;
+    bool ballHitLeftPaddle, ballHitRightPaddle;
     bool ballLaunched;
     bool obstacleHitCleaner;
 }
@@ -108,10 +110,6 @@ public:
         theGround = world->CreateBody(&gdBodyDef);
         
         //ground counts as obstacle, since obstacles are non-harmful objects which the ground can be a part of
-        groundData = new UserData(self,@"Ground");
-        theGround->SetUserData((void*) groundData);
-        
-
         b2PolygonShape gdBox;
         gdBox.SetAsBox(GROUND_ROOF_WIDTH, GROUND_ROOF_HEIGHT);
         theGround->CreateFixture(&gdBox, 0.0f);
@@ -263,40 +261,38 @@ public:
     //  and if so, use ApplyLinearImpulse() and SetActive(true)
     if (ballLaunched)
     {
-        theBall->ApplyLinearImpulse(b2Vec2(0, BALL_VELOCITY), theBall->GetPosition(), true);
-        theBall->SetLinearVelocity(b2Vec2(xDir * JUMP_MAGNITUDE, yDir * JUMP_MAGNITUDE));
+        theBall->SetLinearVelocity(b2Vec2(xDir * BALL_VELOCITY, yDir * BALL_VELOCITY));
         theBall->SetActive(true);
         
-#ifdef LOG_TO_CONSOLE
-        NSLog(@"Applying impulse %f to ball\n", BALL_VELOCITY);
-#endif
         ballLaunched = false;
     }
-
+    
+    //Check if the ball hit either walls, if true score of the side increase.
+    if(ballHitLeftWall){
+        ballHitLeftWall = false;
+        scored = true;
+    } else if (ballHitRightWall){
+        ballHitRightWall = false;
+        scored = true;
+    }
+    
     //in case the ball is not scored on either end, therefore dont update playerposition
     if(!scored){
         [ball updatePos:theBall->GetPosition().x :theBall->GetPosition().y];
     } else {
         [self Reset];
     }
-    // Check if it is time yet to drop the brick, and if so
-    //  call SetAwake()
-    totalElapsedTime += elapsedTime;
-    if ((totalElapsedTime > BRICK_WAIT) && theLeftWall)
-        theLeftWall->SetAwake(true);
-    
-    if(ballHitLeftWall){
-        //world->DestroyBody(theBall);
-        //theBall = NULL;
-        ballHitLeftWall = false;
-        scored = true;
-    }
     
     // If the last collision test was positive,
-    //  stop the ball and destroy the brick
-    if (ballHitObstacle)
-    {
-        ballHitObstacle = false;
+    // increase speed
+    if (ballHitLeftPaddle)
+    {    printf("Left ");
+        theBall->ApplyLinearImpulse(b2Vec2(VELOCITY_INCREASE,0), b2Vec2(theBall->GetPosition()), true);
+        ballHitLeftPaddle = false;
+    } else if (ballHitRightPaddle) {
+        printf("Right ");
+        theBall->ApplyLinearImpulse(b2Vec2(-VELOCITY_INCREASE,0), b2Vec2(theBall->GetPosition()), true);
+        ballHitRightPaddle = false;
     }
     
     if(theleftPaddle)
@@ -307,48 +303,22 @@ public:
     
     //Makes the ground and roof in sync of viewport
     if (theGround){
-        theGround->SetTransform(b2Vec2(400,0), theGround->GetAngle());
+        theGround->SetTransform(b2Vec2(GROUND_ROOF_POS_X,0), theGround->GetAngle());
         theGround->SetAwake(true);
     }
     
     if (theRoof){
-        theRoof->SetTransform(b2Vec2(400,SCREEN_BOUNDS_Y), theGround->GetAngle());
+        theRoof->SetTransform(b2Vec2(GROUND_ROOF_POS_X,SCREEN_BOUNDS_Y), theGround->GetAngle());
         theRoof->SetAwake(true);
     }
     
     if(theLeftWall){
         theLeftWall->SetTransform(b2Vec2(0 ,SCREEN_BOUNDS_Y/2), theLeftWall->GetAngle());
     }
+    
     if(theRightWall){
-        theRightWall->SetTransform(b2Vec2(800 ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
-    }//    if((int)theGround->GetPosition().x - SCREEN_BOUNDS_X/2 >= theObstacle->GetPosition().x) {
-//        printf("Obsacle in middle of screen\n");
-//
-//        b2BodyDef obstacleBodyDef;
-//        obstacleBodyDef.type = b2_staticBody;
-//        obstacleBodyDef.position.Set(theGround->GetPosition().x + SCREEN_BOUNDS_X/2, 200);
-//        theObstacle = world->CreateBody(&obstacleBodyDef);
-//
-//        UserData* obstacleData = new UserData(self,@"Obstacle");
-////        obstacleData->box2D = self;
-////        obstacleData->objectName = @"Obstacle";
-//        if (theObstacle)
-//        {
-//            theObstacle->SetUserData((void*) obstacleData);
-//            theObstacle->SetAwake(false);
-//            b2PolygonShape staticBox;
-//            staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
-//            b2FixtureDef fixtureDef;
-//            fixtureDef.shape = &staticBox;
-//            fixtureDef.density = 1.0f;
-//            fixtureDef.friction = 0.3f;
-//            fixtureDef.restitution = 0.0f;
-//            theObstacle->CreateFixture(&fixtureDef);
-//        }
-//
-//
-//        //theObstacle->SetTransform(b2Vec2(theObstacle->GetPosition().x + OBSTACLE_DISTANCE, obstacle.posY), theObstacle->GetAngle());
-//    }
+        theRightWall->SetTransform(b2Vec2(SCREEN_BOUNDS_X ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
+    }
     
     if (world)
     {
@@ -368,13 +338,17 @@ public:
 //Check the name of the object when the player collides with that object
 -(void)RegisterHit:(NSString *) objectName
 {
-    if([objectName  isEqual: @"Obstacle"]){
-        ballHitObstacle = true;
+    if([objectName  isEqual: @"LeftPaddle"]){
+        ballHitLeftPaddle = true;
+    }
+    if([objectName  isEqual: @"RightPaddle"]){
+        ballHitRightPaddle = true;
     }
     if([objectName  isEqual: @"LeftWall"]){
         ballHitLeftWall = true;
     }
-    if([objectName  isEqual: @"Ground"]){
+    if([objectName  isEqual: @"RightWall"]){
+        ballHitRightWall = true;
     }
 }
 
