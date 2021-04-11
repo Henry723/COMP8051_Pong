@@ -72,9 +72,10 @@ public:
     b2Vec2 *gravity;
     b2World *world;
 
-    b2Body *theLeftWall, *theGround, *theBall, *theRoof, *theObstacle;
+    b2Body *theLeftWall, *theRightWall, *theGround, *theBall, *theRoof, *theRightPaddle, *theleftPaddle;
     
-    UserData *ballData, *wallData, *obstacleData, *groundData;
+    UserData *ballData, *wallData, *rightPaddleData, *groundData, *leftPaddleData;
+
     
     CContactListener *contactListener;
     CGFloat width, height;
@@ -149,6 +150,28 @@ public:
             theLeftWall->CreateFixture(&fixtureDef);
         }
         
+        // Set up the brick and ball objects for Box2D
+        b2BodyDef rightwallBodyDef;
+        rightwallBodyDef.type = b2_kinematicBody;
+        rightwallBodyDef.position.Set(Left_Wall_POS_X+800, Left_Wall_POS_Y);
+        theRightWall = world->CreateBody(&rightwallBodyDef);
+        
+        wallData = new UserData(self,@"RightWall");
+        
+        if (theRightWall)
+        {
+            theRightWall->SetUserData((void *)wallData);
+            theRightWall->SetAwake(false);
+            b2PolygonShape dynamicBox;
+            dynamicBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
+            b2FixtureDef fixtureDef;
+            fixtureDef.shape = &dynamicBox;
+            fixtureDef.density = 1.0f;
+            fixtureDef.friction = 0.3f;
+            fixtureDef.restitution = 0.0f;
+            theRightWall->CreateFixture(&fixtureDef);
+        }
+      
         //ball definition
         ball = [[Ball alloc]init];
         ball.initialJump = false;
@@ -175,18 +198,18 @@ public:
         }
 
         //obstacle definition
-        b2BodyDef obstacleBodyDef;
-        obstacleBodyDef.type = b2_staticBody;
-        obstacleBodyDef.position.Set(OBSTACLE_POS_X-200, OBSTACLE_POS_Y);
-        theObstacle = world->CreateBody(&obstacleBodyDef);
+        b2BodyDef lPaddleBodyDef;
+        lPaddleBodyDef.type = b2_staticBody;
+        lPaddleBodyDef.position.Set(OBSTACLE_POS_X-800, OBSTACLE_POS_Y);
+        theleftPaddle = world->CreateBody(&lPaddleBodyDef);
         
-        obstacleData = new UserData(self, @"Obstacle");
+        leftPaddleData = new UserData(self, @"LeftPaddle");
         
-        if (theObstacle)
+        if (theleftPaddle)
         {
             
-            theObstacle->SetUserData((void *)obstacleData);
-            theObstacle->SetAwake(false);
+            theleftPaddle->SetUserData((void *)leftPaddleData);
+            theleftPaddle->SetAwake(false);
             b2PolygonShape staticBox;
             staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
             b2FixtureDef fixtureDef;
@@ -194,7 +217,30 @@ public:
             fixtureDef.density = 1.0f;
             fixtureDef.friction = 0.3f;
             fixtureDef.restitution = 0.0f;
-            theObstacle->CreateFixture(&fixtureDef);
+            theleftPaddle->CreateFixture(&fixtureDef);
+        }
+        
+        //obstacle definition
+        b2BodyDef rPaddleBodyDef;
+        rPaddleBodyDef.type = b2_staticBody;
+        rPaddleBodyDef.position.Set(OBSTACLE_POS_X-200, OBSTACLE_POS_Y);
+        theRightPaddle = world->CreateBody(&rPaddleBodyDef);
+        
+        rightPaddleData = new UserData(self, @"RightPaddle");
+        
+        if (theRightPaddle)
+        {
+            
+            theRightPaddle->SetUserData((void *)rightPaddleData);
+            theRightPaddle->SetAwake(false);
+            b2PolygonShape staticBox;
+            staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
+            b2FixtureDef fixtureDef;
+            fixtureDef.shape = &staticBox;
+            fixtureDef.density = 1.0f;
+            fixtureDef.friction = 0.3f;
+            fixtureDef.restitution = 0.0f;
+            theRightPaddle->CreateFixture(&fixtureDef);
         }
         
         totalElapsedTime = 0;
@@ -253,10 +299,13 @@ public:
         ballHitObstacle = false;
     }
     
-    if(theObstacle)
-        theObstacle->SetAwake(true);
+    if(theleftPaddle)
+        theleftPaddle->SetAwake(true);
 
-    //Makes the ground and roof in the viewport
+    if(theRightPaddle)
+        theRightPaddle->SetAwake(true);
+    
+    //Makes the ground and roof in sync of viewport
     if (theGround){
         theGround->SetTransform(b2Vec2(400,0), theGround->GetAngle());
         theGround->SetAwake(true);
@@ -270,35 +319,36 @@ public:
     if(theLeftWall){
         theLeftWall->SetTransform(b2Vec2(0 ,SCREEN_BOUNDS_Y/2), theLeftWall->GetAngle());
     }
-    
-    if((int)theGround->GetPosition().x - SCREEN_BOUNDS_X/2 >= theObstacle->GetPosition().x) {
-        printf("Obsacle in middle of screen\n");
-        
-        b2BodyDef obstacleBodyDef;
-        obstacleBodyDef.type = b2_staticBody;
-        obstacleBodyDef.position.Set(theGround->GetPosition().x + SCREEN_BOUNDS_X/2, 200);
-        theObstacle = world->CreateBody(&obstacleBodyDef);
-        
-        UserData* obstacleData = new UserData(self,@"Obstacle");
-//        obstacleData->box2D = self;
-//        obstacleData->objectName = @"Obstacle";
-        if (theObstacle)
-        {
-            theObstacle->SetUserData((void*) obstacleData);
-            theObstacle->SetAwake(false);
-            b2PolygonShape staticBox;
-            staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
-            b2FixtureDef fixtureDef;
-            fixtureDef.shape = &staticBox;
-            fixtureDef.density = 1.0f;
-            fixtureDef.friction = 0.3f;
-            fixtureDef.restitution = 0.0f;
-            theObstacle->CreateFixture(&fixtureDef);
-        }
-        
-        
-        //theObstacle->SetTransform(b2Vec2(theObstacle->GetPosition().x + OBSTACLE_DISTANCE, obstacle.posY), theObstacle->GetAngle());
-    }
+    if(theRightWall){
+        theRightWall->SetTransform(b2Vec2(800 ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
+    }//    if((int)theGround->GetPosition().x - SCREEN_BOUNDS_X/2 >= theObstacle->GetPosition().x) {
+//        printf("Obsacle in middle of screen\n");
+//
+//        b2BodyDef obstacleBodyDef;
+//        obstacleBodyDef.type = b2_staticBody;
+//        obstacleBodyDef.position.Set(theGround->GetPosition().x + SCREEN_BOUNDS_X/2, 200);
+//        theObstacle = world->CreateBody(&obstacleBodyDef);
+//
+//        UserData* obstacleData = new UserData(self,@"Obstacle");
+////        obstacleData->box2D = self;
+////        obstacleData->objectName = @"Obstacle";
+//        if (theObstacle)
+//        {
+//            theObstacle->SetUserData((void*) obstacleData);
+//            theObstacle->SetAwake(false);
+//            b2PolygonShape staticBox;
+//            staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
+//            b2FixtureDef fixtureDef;
+//            fixtureDef.shape = &staticBox;
+//            fixtureDef.density = 1.0f;
+//            fixtureDef.friction = 0.3f;
+//            fixtureDef.restitution = 0.0f;
+//            theObstacle->CreateFixture(&fixtureDef);
+//        }
+//
+//
+//        //theObstacle->SetTransform(b2Vec2(theObstacle->GetPosition().x + OBSTACLE_DISTANCE, obstacle.posY), theObstacle->GetAngle());
+//    }
     
     if (world)
     {
@@ -409,8 +459,12 @@ public:
         (*objPosList)["ball"] = theBall->GetPosition();
     if (theLeftWall)
         (*objPosList)["leftwall"] = theLeftWall->GetPosition();
-    if (theObstacle)
-        (*objPosList)["obstacle"] = theObstacle->GetPosition();
+    if (theRightWall)
+        (*objPosList)["rightwall"] = theRightWall->GetPosition();
+    if (theleftPaddle)
+        (*objPosList)["leftpaddle"] = theleftPaddle->GetPosition();
+    if (theRightPaddle)
+        (*objPosList)["rightpaddle"] = theRightPaddle->GetPosition();
     if (theGround)
         (*objPosList)["ground"] = theGround->GetPosition();
     if (theRoof)

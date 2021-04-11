@@ -39,8 +39,8 @@ enum
     GLuint programObject;
     std::chrono::time_point<std::chrono::steady_clock> lastTime;    // used to calculated elapsed time
 
-    GLuint brickVertexArray, ballVertexArray, groundVertexArray, roofVertexArray, obstacleVertexArray;   // vertex arrays for brick and ball
-    int numLeftWallVerts, numBallVerts, numObstacleVerts, numGroundVerts, numRoofVerts;
+    GLuint brickVertexArray,rightWallVertexArray, ballVertexArray, groundVertexArray, roofVertexArray, leftPaddleVertexArray, rightPaddleVertexArray;   // vertex arrays for brick and ball
+    int numLeftWallVerts, numRightWallVerts, numBallVerts, numLeftPaddleVerts, numRightPaddleVerts, numGroundVerts, numRoofVerts;
     GLKMatrix4 modelViewProjectionMatrix;   // model-view-projection matrix
 }
 
@@ -95,7 +95,9 @@ enum
     auto objPosList = static_cast<std::map<const char *, b2Vec2> *>([box2d GetObjectPositions]);
     b2Vec2 *theBall = (((*objPosList).find("ball") == (*objPosList).end()) ? nullptr : &(*objPosList)["ball"]);
     b2Vec2 *theLeftWall = (((*objPosList).find("leftwall") == (*objPosList).end()) ? nullptr : &(*objPosList)["leftwall"]);
-    b2Vec2 *theObstacle = (((*objPosList).find("obstacle") == (*objPosList).end()) ? nullptr : &(*objPosList)["obstacle"]);
+    b2Vec2 *theRightWall = (((*objPosList).find("rightwall") == (*objPosList).end()) ? nullptr : &(*objPosList)["rightwall"]);
+    b2Vec2 *theLeftPaddle = (((*objPosList).find("leftpaddle") == (*objPosList).end()) ? nullptr : &(*objPosList)["leftpaddle"]);
+    b2Vec2 *theRightPaddle = (((*objPosList).find("rightpaddle") == (*objPosList).end()) ? nullptr : &(*objPosList)["rightpaddle"]);
     b2Vec2 *theGround = (((*objPosList).find("ground") == (*objPosList).end()) ? nullptr : &(*objPosList)["ground"]);
     b2Vec2 *theRoof = (((*objPosList).find("roof") == (*objPosList).end()) ? nullptr : &(*objPosList)["roof"]);
 
@@ -155,7 +157,63 @@ enum
 
         glBindVertexArray(0);
     }
+    
+    if (theRightWall)
+    {
+        // Set up VAO/VBO for brick
+        glGenVertexArrays(1, &rightWallVertexArray);
+        glBindVertexArray(rightWallVertexArray);
+        GLuint vertexBuffers[2];
+        glGenBuffers(2, vertexBuffers);
+        
+        // VBO for vertex positions
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
+        GLfloat vertPos[18];    // 2 triangles x 3 vertices/triangle x 3 coords (x,y,z) per vertex
+        int k = 0;
+        numRightWallVerts = 0;
+        vertPos[k++] = theRightWall->x - Left_Wall_WIDTH/2;
+        vertPos[k++] = theRightWall->y + Left_Wall_HEIGHT/2;
+        vertPos[k++] = 10;  // z-value is always set to same value since 2D
+        numRightWallVerts++;
+        vertPos[k++] = theRightWall->x + Left_Wall_WIDTH/2;
+        vertPos[k++] = theRightWall->y + Left_Wall_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightWallVerts++;
+        vertPos[k++] = theRightWall->x + Left_Wall_WIDTH/2;
+        vertPos[k++] = theRightWall->y - Left_Wall_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightWallVerts++;
+        vertPos[k++] = theRightWall->x - Left_Wall_WIDTH/2;
+        vertPos[k++] = theRightWall->y + Left_Wall_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightWallVerts++;
+        vertPos[k++] = theRightWall->x + Left_Wall_WIDTH/2;
+        vertPos[k++] = theRightWall->y - Left_Wall_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightWallVerts++;
+        vertPos[k++] = theRightWall->x - Left_Wall_WIDTH/2;
+        vertPos[k++] = theRightWall->y - Left_Wall_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightWallVerts++;
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);    // Send vertex data to VBO
+        glEnableVertexAttribArray(ATTRIB_POS);
+        glVertexAttribPointer(ATTRIB_POS, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
+        
+        // VBO for vertex colours
+        GLfloat vertCol[numRightWallVerts*3];
+        for (k=0; k<numRightWallVerts*3; k+=3)
+        {
+            vertCol[k] = 1.0f;
+            vertCol[k+1] = 0.0f;
+            vertCol[k+2] = 0.0f;
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[1]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertCol), vertCol, GL_STATIC_DRAW);    // Send vertex data to VBO
+        glEnableVertexAttribArray(ATTRIB_COL);
+        glVertexAttribPointer(ATTRIB_COL, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
 
+        glBindVertexArray(0);
+    }
 
     if (theBall)
     {
@@ -202,11 +260,11 @@ enum
         glBindVertexArray(0);
     }
     
-    if (theObstacle)
+    if (theLeftPaddle)
     {
         // Set up VAO/VBO for obstacle
-        glGenVertexArrays(1, &obstacleVertexArray);
-        glBindVertexArray(obstacleVertexArray);
+        glGenVertexArrays(1, &leftPaddleVertexArray);
+        glBindVertexArray(leftPaddleVertexArray);
         GLuint vertexBuffers[2];
         glGenBuffers(2, vertexBuffers);
         
@@ -214,38 +272,38 @@ enum
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
         GLfloat vertPos[18];    // 2 triangles x 3 vertices/triangle x 3 coords (x,y,z) per vertex
         int k = 0;
-        numObstacleVerts = 0;
-        vertPos[k++] = theObstacle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theObstacle->y + OBSTACLE_HEIGHT/2;
+        numLeftPaddleVerts = 0;
+        vertPos[k++] = theLeftPaddle->x - OBSTACLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y + OBSTACLE_HEIGHT/2;
         vertPos[k++] = 10;  // z-value is always set to same value since 2D
-        numObstacleVerts++;
-        vertPos[k++] = theObstacle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theObstacle->y + OBSTACLE_HEIGHT/2;
+        numLeftPaddleVerts++;
+        vertPos[k++] = theLeftPaddle->x + OBSTACLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y + OBSTACLE_HEIGHT/2;
         vertPos[k++] = 10;
-        numObstacleVerts++;
-        vertPos[k++] = theObstacle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theObstacle->y - OBSTACLE_HEIGHT/2;
+        numLeftPaddleVerts++;
+        vertPos[k++] = theLeftPaddle->x + OBSTACLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y - OBSTACLE_HEIGHT/2;
         vertPos[k++] = 10;
-        numObstacleVerts++;
-        vertPos[k++] = theObstacle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theObstacle->y + OBSTACLE_HEIGHT/2;
+        numLeftPaddleVerts++;
+        vertPos[k++] = theLeftPaddle->x - OBSTACLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y + OBSTACLE_HEIGHT/2;
         vertPos[k++] = 10;
-        numObstacleVerts++;
-        vertPos[k++] = theObstacle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theObstacle->y - OBSTACLE_HEIGHT/2;
+        numLeftPaddleVerts++;
+        vertPos[k++] = theLeftPaddle->x + OBSTACLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y - OBSTACLE_HEIGHT/2;
         vertPos[k++] = 10;
-        numObstacleVerts++;
-        vertPos[k++] = theObstacle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theObstacle->y - OBSTACLE_HEIGHT/2;
+        numLeftPaddleVerts++;
+        vertPos[k++] = theLeftPaddle->x - OBSTACLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y - OBSTACLE_HEIGHT/2;
         vertPos[k++] = 10;
-        numObstacleVerts++;
+        numLeftPaddleVerts++;
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);    // Send vertex data to VBO
         glEnableVertexAttribArray(ATTRIB_POS);
         glVertexAttribPointer(ATTRIB_POS, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
         
         // VBO for vertex colours
-        GLfloat vertCol[numObstacleVerts*3];
-        for (k=0; k<numObstacleVerts*3; k+=3)
+        GLfloat vertCol[numLeftPaddleVerts*3];
+        for (k=0; k<numLeftPaddleVerts*3; k+=3)
         {
             vertCol[k] = 1;
             vertCol[k+1] = 0;
@@ -258,7 +316,64 @@ enum
 
         glBindVertexArray(0);
     }
+    
+    if (theRightPaddle)
+    {
+        // Set up VAO/VBO for obstacle
+        glGenVertexArrays(1, &rightPaddleVertexArray);
+        glBindVertexArray(rightPaddleVertexArray);
+        GLuint vertexBuffers[2];
+        glGenBuffers(2, vertexBuffers);
+        
+        // VBO for vertex positions
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[0]);
+        GLfloat vertPos[18];    // 2 triangles x 3 vertices/triangle x 3 coords (x,y,z) per vertex
+        int k = 0;
+        numRightPaddleVerts = 0;
+        vertPos[k++] = theRightPaddle->x - OBSTACLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = 10;  // z-value is always set to same value since 2D
+        numRightPaddleVerts++;
+        vertPos[k++] = theRightPaddle->x + OBSTACLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightPaddleVerts++;
+        vertPos[k++] = theRightPaddle->x + OBSTACLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightPaddleVerts++;
+        vertPos[k++] = theRightPaddle->x - OBSTACLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightPaddleVerts++;
+        vertPos[k++] = theRightPaddle->x + OBSTACLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightPaddleVerts++;
+        vertPos[k++] = theRightPaddle->x - OBSTACLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = 10;
+        numRightPaddleVerts++;
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);    // Send vertex data to VBO
+        glEnableVertexAttribArray(ATTRIB_POS);
+        glVertexAttribPointer(ATTRIB_POS, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
+        
+        // VBO for vertex colours
+        GLfloat vertCol[numRightPaddleVerts*3];
+        for (k=0; k<numRightPaddleVerts*3; k+=3)
+        {
+            vertCol[k] = 1;
+            vertCol[k+1] = 0;
+            vertCol[k+2] = 0;
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[1]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertCol), vertCol, GL_STATIC_DRAW);    // Send vertex data to VBO
+        glEnableVertexAttribArray(ATTRIB_COL);
+        glVertexAttribPointer(ATTRIB_COL, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), BUFFER_OFFSET(0));
 
+        glBindVertexArray(0);
+    }
+    
     if (theGround)
     {
         // Set up VAO/VBO for brick
@@ -393,7 +508,9 @@ enum
     auto objPosList = static_cast<std::map<const char *, b2Vec2> *>([box2d GetObjectPositions]);
     b2Vec2 *theBall = (((*objPosList).find("ball") == (*objPosList).end()) ? nullptr : &(*objPosList)["ball"]);
     b2Vec2 *theLeftWall = (((*objPosList).find("leftwall") == (*objPosList).end()) ? nullptr : &(*objPosList)["leftwall"]);
-    b2Vec2 *theObstacle = (((*objPosList).find("obstacle") == (*objPosList).end()) ? nullptr : &(*objPosList)["obstacle"]);
+    b2Vec2 *theRightWall = (((*objPosList).find("rightwall") == (*objPosList).end()) ? nullptr : &(*objPosList)["rightwall"]);
+    b2Vec2 *theLeftPaddle = (((*objPosList).find("leftpaddle") == (*objPosList).end()) ? nullptr : &(*objPosList)["leftpaddle"]);
+    b2Vec2 *theRightPaddle = (((*objPosList).find("rightpaddle") == (*objPosList).end()) ? nullptr : &(*objPosList)["rightpaddle"]);
     b2Vec2 *theGround = (((*objPosList).find("ground") == (*objPosList).end()) ? nullptr : &(*objPosList)["ground"]);
     b2Vec2 *theRoof = (((*objPosList).find("roof") == (*objPosList).end()) ? nullptr : &(*objPosList)["roof"]);
 #ifdef LOG_TO_CONSOLE
@@ -408,14 +525,21 @@ enum
     glBindVertexArray(brickVertexArray);
     if (theLeftWall && numLeftWallVerts > 0)
         glDrawArrays(GL_TRIANGLES, 0, numLeftWallVerts);
-
+    
+    glBindVertexArray(rightWallVertexArray);
+    if (theRightWall && numRightWallVerts > 0)
+        glDrawArrays(GL_TRIANGLES, 0, numRightWallVerts);
+    
     glBindVertexArray(ballVertexArray);
     if (theBall && numBallVerts > 0)
         glDrawArrays(GL_TRIANGLE_FAN, 0, numBallVerts);
     
-    glBindVertexArray(obstacleVertexArray);
-    if(theObstacle && numObstacleVerts > 0)
-        glDrawArrays(GL_TRIANGLES, 0, numObstacleVerts);
+    glBindVertexArray(leftPaddleVertexArray);
+    if(theLeftPaddle && numLeftPaddleVerts > 0)
+        glDrawArrays(GL_TRIANGLES, 0, numLeftPaddleVerts);
+    glBindVertexArray(rightPaddleVertexArray);
+    if(theRightPaddle && numRightPaddleVerts > 0)
+        glDrawArrays(GL_TRIANGLES, 0, numRightPaddleVerts);
     glBindVertexArray(groundVertexArray);
     if (theGround && numGroundVerts > 0)
         glDrawArrays(GL_TRIANGLES, 0, numGroundVerts);
