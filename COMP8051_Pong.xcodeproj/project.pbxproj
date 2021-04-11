@@ -151,7 +151,6 @@
 		78B1AB14262371E90022BC26 /* b2Math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2Math.cpp; sourceTree = "<group>"; };
 		78B1AB15262371E90022BC26 /* b2Draw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2Draw.h; sourceTree = "<group>"; };
 		78B1AB16262371E90022BC26 /* b2Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2Settings.h; sourceTree = "<group>"; };
-		78B1AB17262371E90022BC26 /* CBox2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBox2D.h; sourceTree = "<group>"; };
 		78B1AB19262371E90022BC26 /* b2Collision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2Collision.h; sourceTree = "<group>"; };
 		78B1AB1A262371E90022BC26 /* b2Distance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2Distance.cpp; sourceTree = "<group>"; };
 		78B1AB1B262371E90022BC26 /* b2CollideCircle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2CollideCircle.cpp; sourceTree = "<group>"; };
@@ -243,7 +242,6 @@
 				78B1AB05262371E90022BC26 /* Box2D.h */,
 				78B1AB06262371E90022BC26 /* Rope */,
 				78B1AB09262371E90022BC26 /* Common */,
-				78B1AB17262371E90022BC26 /* CBox2D.h */,
 				78B1AB18262371E90022BC26 /* Collision */,
 			);
 			path = Box2D;
