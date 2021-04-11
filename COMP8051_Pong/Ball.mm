@@ -1,28 +1,19 @@
 //
-//  Player.mm
-//  ProtoJump
+//  Ball.mm
+//  COMP8051_Pong
 //
-//  Created by Henry Zhang on 2021-04-03.
+//  Created by Henry Zhang on 2021-04-11.
 //
 
-#include "Player.h"
+#include "Ball.h"
 
-//typedef enum {
-//    grounded,
-//    leftCollision,
-//    rightCollision,
-//    topCollision
-//} PlayerState;
+@implementation Ball
 
-@implementation Player
-
-@synthesize posX, posY, jumpTimer, initialJump;
-@synthesize jumpCount;
+@synthesize posX, posY, initialJump;
 
 -(instancetype)init {
     self = [super init];
     if(self){
-        state = grounded;
     }
     return self;
 }
@@ -43,25 +34,17 @@
 
         if(posY > positionY + height/2){
             printf("Top \n");
-            state = grounded;
-            jumpCount = 0;
         }
         else if(posY < positionY - height/2){
                     //change the enum for which side its colliding with to the enum
-                    //also there will be an enum that states wether the player is grounded or not being set here
             printf("Bottom \n");
-            state = bottomCollision;
         }
     }
     else {
         if(posX < positionX + width/2){
             printf("Left \n");
-            state = leftCollision;
-            jumpCount = 0;
         } else if(posX > positionX - width/2){
             printf("Right \n");
-            state = rightCollision;
-            jumpCount = 0;
         }
     }
 }

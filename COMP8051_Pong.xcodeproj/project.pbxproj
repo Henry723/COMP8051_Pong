@@ -64,7 +64,7 @@
 		78B1AB6A262371E90022BC26 /* GLESRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 78B1AB30262371E90022BC26 /* GLESRenderer.cpp */; };
 		78B1AB6B262371E90022BC26 /* Shader.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 78B1AB33262371E90022BC26 /* Shader.vsh */; };
 		78B1AB6D262371E90022BC26 /* Renderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 78B1AB37262371E90022BC26 /* Renderer.mm */; };
-		78B1AB6E262371E90022BC26 /* Player.mm in Sources */ = {isa = PBXBuildFile; fileRef = 78B1AB38262371E90022BC26 /* Player.mm */; };
+		78B1AB7926238BB30022BC26 /* Ball.mm in Sources */ = {isa = PBXBuildFile; fileRef = 78B1AB7826238BB30022BC26 /* Ball.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -177,10 +177,10 @@
 		78B1AB30262371E90022BC26 /* GLESRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLESRenderer.cpp; sourceTree = "<group>"; };
 		78B1AB32262371E90022BC26 /* Renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
 		78B1AB33262371E90022BC26 /* Shader.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = Shader.vsh; sourceTree = "<group>"; };
-		78B1AB36262371E90022BC26 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
 		78B1AB37262371E90022BC26 /* Renderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Renderer.mm; sourceTree = "<group>"; };
-		78B1AB38262371E90022BC26 /* Player.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Player.mm; sourceTree = "<group>"; };
 		78B1AB39262371E90022BC26 /* CBox2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBox2D.h; sourceTree = "<group>"; };
+		78B1AB7826238BB30022BC26 /* Ball.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Ball.mm; sourceTree = "<group>"; };
+		78B1AB7C26238BE30022BC26 /* Ball.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Ball.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -218,8 +218,8 @@
 				78B1AAC8262371E90022BC26 /* CBox2D.mm */,
 				78B1AB30262371E90022BC26 /* GLESRenderer.cpp */,
 				78B1AAC9262371E90022BC26 /* GLESRenderer.hpp */,
-				78B1AB36262371E90022BC26 /* Player.h */,
-				78B1AB38262371E90022BC26 /* Player.mm */,
+				78B1AB7C26238BE30022BC26 /* Ball.h */,
+				78B1AB7826238BB30022BC26 /* Ball.mm */,
 				78B1AB32262371E90022BC26 /* Renderer.h */,
 				78B1AB37262371E90022BC26 /* Renderer.mm */,
 				78B1AAC7262371E90022BC26 /* Shader.fsh */,
@@ -478,7 +478,6 @@
 				78B1AB6A262371E90022BC26 /* GLESRenderer.cpp in Sources */,
 				78B1AB43262371E90022BC26 /* b2PolygonContact.cpp in Sources */,
 				78B1AB4E262371E90022BC26 /* b2MotorJoint.cpp in Sources */,
-				78B1AB6E262371E90022BC26 /* Player.mm in Sources */,
 				78B1AB49262371E90022BC26 /* b2WeldJoint.cpp in Sources */,
 				78B1AB61262371E90022BC26 /* b2DynamicTree.cpp in Sources */,
 				78B1AAB12623712C0022BC26 /* AppDelegate.swift in Sources */,
@@ -492,6 +491,7 @@
 				78B1AB64262371E90022BC26 /* b2CircleShape.cpp in Sources */,
 				78B1AAB32623712C0022BC26 /* SceneDelegate.swift in Sources */,
 				78B1AB42262371E90022BC26 /* b2PolygonAndCircleContact.cpp in Sources */,
+				78B1AB7926238BB30022BC26 /* Ball.mm in Sources */,
 				78B1AB4C262371E90022BC26 /* b2DistanceJoint.cpp in Sources */,
 				78B1AB46262371E90022BC26 /* b2EdgeAndCircleContact.cpp in Sources */,
 				78B1AB5F262371E90022BC26 /* b2CollideCircle.cpp in Sources */,

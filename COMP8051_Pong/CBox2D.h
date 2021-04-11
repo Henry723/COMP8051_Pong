@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 
-#import "Player.h"
+#import "Ball.h"
 
 // Set up brick and ball physics parameters here:
 //   position, width+height (or radius), velocity,
@@ -18,7 +18,7 @@
 
 // Physics & Game-Speed Parameters
 #define JUMP_MAGNITUDE         400
-#define GRAVITY                -350
+#define GRAVITY                0
 #define REFRESH_RATE           0.05/60
 
 
@@ -33,9 +33,9 @@
 #define BRICK_HEIGHT           100.0f
 #define BRICK_WAIT             0.0f
 
-#define BALL_POS_X             400
-#define BALL_POS_Y             50
-#define BALL_RADIUS            50.0f
+#define BALL_POS_X             SCREEN_BOUNDS_X/2
+#define BALL_POS_Y             SCREEN_BOUNDS_Y/2
+#define BALL_RADIUS            20.0f
 #define BALL_VELOCITY          100000.0f
 #define BALL_SPHERE_SEGS       128
 #define GROUND_ROOF_PADDING    10.0f
@@ -55,9 +55,8 @@
 
 @property float xDir;
 @property float yDir;
-@property bool dead;
-@property float slowFactor;
-@property (nonatomic) Player * player;
+@property bool scored;
+@property (nonatomic) Ball * ball;
 
 // @property b2Vec2 _targetVector;
 
@@ -73,7 +72,7 @@
 -(void) InitiateNewJump:(float)posX:(float)posY;
 -(void) UpdateJumpTarget:(float)posX:(float)posY;
 -(void) LaunchJump;
-
+-(void) Reset;
 
 @end
 

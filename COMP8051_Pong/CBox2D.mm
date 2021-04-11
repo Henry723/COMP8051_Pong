@@ -71,15 +71,11 @@ public:
     // Box2D-specific objects
     b2Vec2 *gravity;
     b2World *world;
-    //Obstacle *obstacle;
 
-    //b2BodyDef *groundBodyDef;
-    //b2Body *groundBody;
-    //b2PolygonShape *groundBox;
-
-    b2Body *theLeftWall, *theRightWall, *theGround, *thePlayer, *theRoof, *theRightPaddle, *theleftPaddle;
+    b2Body *theLeftWall, *theRightWall, *theGround, *theBall, *theRoof, *theRightPaddle, *theleftPaddle;
     
-    UserData *playerData, *wallData, *rightPaddleData, *groundData, *leftPaddleData;
+    UserData *ballData, *wallData, *rightPaddleData, *groundData, *leftPaddleData;
+
     
     CContactListener *contactListener;
     CGFloat width, height;
@@ -95,10 +91,8 @@ public:
 @implementation CBox2D
 
 @synthesize xDir, yDir;
-@synthesize dead;
-@synthesize slowFactor;
-@synthesize player;
-//@synthesize _targetVector;
+@synthesize scored;
+@synthesize ball;
 
 - (instancetype)init
 {
@@ -177,33 +171,30 @@ public:
             fixtureDef.restitution = 0.0f;
             theRightWall->CreateFixture(&fixtureDef);
         }
-        //player definition
-        player = [[Player alloc]init];
-        player.initialJump = false;
-        player.jumpTimer = 0;
-        player.jumpCount = 0;
-        player.maxJump = 2;
-        b2BodyDef playerBodyDef;
-        playerBodyDef.type = b2_dynamicBody;
-        playerBodyDef.position.Set(BALL_POS_X, BALL_POS_Y);
-        thePlayer = world->CreateBody(&playerBodyDef);
+      
+        //ball definition
+        ball = [[Ball alloc]init];
+        ball.initialJump = false;
+        b2BodyDef ballBodyDef;
+        ballBodyDef.type = b2_dynamicBody;
+        ballBodyDef.position.Set(BALL_POS_X, BALL_POS_Y);
+        theBall = world->CreateBody(&ballBodyDef);
         
-        playerData = new UserData(self, @"Player");
+        ballData = new UserData(self, @"Ball");
         
-        if (thePlayer)
+        if (theBall)
         {
-            
-            thePlayer->SetUserData((void *)playerData);
-            thePlayer->SetAwake(false);
+            theBall->SetUserData((void *)ballData);
+            theBall->SetAwake(false);
             b2CircleShape circle;
             circle.m_p.Set(0, 0);
             circle.m_radius = BALL_RADIUS;
             b2FixtureDef circleFixtureDef;
             circleFixtureDef.shape = &circle;
             circleFixtureDef.density = 0.1f;
-            circleFixtureDef.friction = 0.3f;
-            circleFixtureDef.restitution = 0.0f;
-            thePlayer->CreateFixture(&circleFixtureDef);
+            circleFixtureDef.friction = 0.0f;
+            circleFixtureDef.restitution = 1.0f;
+            theBall->CreateFixture(&circleFixtureDef);
         }
 
         //obstacle definition
@@ -272,40 +263,21 @@ public:
     //  and if so, use ApplyLinearImpulse() and SetActive(true)
     if (ballLaunched)
     {
-        printf("JumpCount %f \n",player.jumpCount);
-        if(player->state == grounded || player->state == leftCollision || player->state == rightCollision){
-            player->state = airborne;
-            player.jumpCount++;
-            thePlayer->ApplyLinearImpulse(b2Vec2(0, BALL_VELOCITY), thePlayer->GetPosition(), true);
-            thePlayer->SetLinearVelocity(b2Vec2(xDir * JUMP_MAGNITUDE, yDir * JUMP_MAGNITUDE));
-            thePlayer->SetActive(true);
-        } else {
-            //if the timer is 0, it means they haven't used their double jump yet
-            if(player.jumpCount > player.maxJump){
-                //if player touches a non hazardous obstacle,reset jump
-                if(player->state == grounded || player->state == leftCollision || player->state == rightCollision){
-                    printf("jump reset");
-                    //player.jumpTimer = 0;
-                    player.jumpCount = 0;
-                }
-            }
-            else{
-                player.jumpCount++;
-                player.jumpTimer = totalElapsedTime;
-                thePlayer->ApplyLinearImpulse(b2Vec2(0, BALL_VELOCITY), thePlayer->GetPosition(), true);
-                thePlayer->SetLinearVelocity(b2Vec2(xDir * JUMP_MAGNITUDE, yDir * JUMP_MAGNITUDE));
-                thePlayer->SetActive(true);
-            }
-        }
+        theBall->ApplyLinearImpulse(b2Vec2(0, BALL_VELOCITY), theBall->GetPosition(), true);
+        theBall->SetLinearVelocity(b2Vec2(xDir * JUMP_MAGNITUDE, yDir * JUMP_MAGNITUDE));
+        theBall->SetActive(true);
+        
 #ifdef LOG_TO_CONSOLE
         NSLog(@"Applying impulse %f to ball\n", BALL_VELOCITY);
 #endif
         ballLaunched = false;
     }
 
-    //in case the player is already dead, therefore dont update playerposition
-    if(!dead){
-        [player updatePos:thePlayer->GetPosition().x :thePlayer->GetPosition().y];
+    //in case the ball is not scored on either end, therefore dont update playerposition
+    if(!scored){
+        [ball updatePos:theBall->GetPosition().x :theBall->GetPosition().y];
+    } else {
+        [self Reset];
     }
     // Check if it is time yet to drop the brick, and if so
     //  call SetAwake()
@@ -314,10 +286,10 @@ public:
         theLeftWall->SetAwake(true);
     
     if(ballHitLeftWall){
-        world->DestroyBody(thePlayer);
-        thePlayer = NULL;
+        //world->DestroyBody(theBall);
+        //theBall = NULL;
         ballHitLeftWall = false;
-        dead = true;
+        scored = true;
     }
     
     // If the last collision test was positive,
@@ -348,7 +320,7 @@ public:
         theLeftWall->SetTransform(b2Vec2(0 ,SCREEN_BOUNDS_Y/2), theLeftWall->GetAngle());
     }
     if(theRightWall){
-        theRightWall->SetTransform(b2Vec2(0 ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
+        theRightWall->SetTransform(b2Vec2(800 ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
     }//    if((int)theGround->GetPosition().x - SCREEN_BOUNDS_X/2 >= theObstacle->GetPosition().x) {
 //        printf("Obsacle in middle of screen\n");
 //
@@ -391,10 +363,6 @@ public:
             world->Step(elapsedTime, NUM_VEL_ITERATIONS, NUM_POS_ITERATIONS);
         }
     }
-    
-    //Gravity and the viewport translate speed is slowed
-    gravity->y = GRAVITY * slowFactor;
-    world->SetGravity(*gravity);
 }
 
 //Check the name of the object when the player collides with that object
@@ -407,15 +375,13 @@ public:
         ballHitLeftWall = true;
     }
     if([objectName  isEqual: @"Ground"]){
-        player->state = grounded;
-        player.jumpCount = 0;
     }
 }
 
 -(void) SetTargetVector:(float)posX :(float)posY
 {
     // Curate ball Pos value to be scaled to screen space.
-    b2Vec2 currentBallPos = thePlayer->GetPosition();
+    b2Vec2 currentBallPos = theBall->GetPosition();
     currentBallPos.x = ((currentBallPos.x)/ SCREEN_BOUNDS_X);
     
     currentBallPos.y = -((currentBallPos.y / SCREEN_BOUNDS_Y) - 1);
@@ -429,12 +395,8 @@ public:
 // Halt current velocity, set initial target position
 -(void)InitiateNewJump:(float)posX :(float)posY
 {
-    thePlayer->SetLinearVelocity(b2Vec2(0, 75));
-    
-//    [SetTargetVector:posX :posY];
-    
     // Curate ball Pos value to be scaled to screen space.
-    b2Vec2 currentBallPos = thePlayer->GetPosition();
+    b2Vec2 currentBallPos = theBall->GetPosition();
     currentBallPos.x = ((currentBallPos.x) / SCREEN_BOUNDS_X);
     
     currentBallPos.y = -((currentBallPos.y / SCREEN_BOUNDS_Y) - 1);
@@ -456,7 +418,7 @@ public:
 {
     
     // Curate ball Pos value to be scaled to screen space.
-    b2Vec2 currentBallPos = thePlayer->GetPosition();
+    b2Vec2 currentBallPos = theBall->GetPosition();
     currentBallPos.x = ((currentBallPos.x)/ SCREEN_BOUNDS_X);
     
     currentBallPos.y = -((currentBallPos.y / SCREEN_BOUNDS_Y) - 1);
@@ -481,11 +443,20 @@ public:
     ballLaunched = true;
 }
 
+//if the ball hits any end goal, the ball and the both paddles should be centered on their initial location.
+-(void)Reset
+{
+    scored = false;
+    theBall->SetLinearVelocity(b2Vec2(0,0));
+    theBall->SetTransform(b2Vec2(BALL_POS_X,BALL_POS_Y), theBall->GetAngle());
+    theBall->SetAwake(true);
+}
+
 -(void *)GetObjectPositions
 {
     auto *objPosList = new std::map<const char *,b2Vec2>;
-    if (thePlayer)
-        (*objPosList)["ball"] = thePlayer->GetPosition();
+    if (theBall)
+        (*objPosList)["ball"] = theBall->GetPosition();
     if (theLeftWall)
         (*objPosList)["leftwall"] = theLeftWall->GetPosition();
     if (theRightWall)
