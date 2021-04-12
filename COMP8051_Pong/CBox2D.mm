@@ -255,11 +255,10 @@ public:
     // If the last collision test was positive,
     // increase speed
     if (ballHitLeftPaddle)
-    {    //printf("Left ");
+    {
         theBall->ApplyLinearImpulse(b2Vec2(VELOCITY_INCREASE,0), theBall->GetPosition(), true);
         ballHitLeftPaddle = false;
     } else if (ballHitRightPaddle) {
-        printf("Right ");
         theBall->ApplyLinearImpulse(b2Vec2(-VELOCITY_INCREASE,0), theBall->GetPosition(), true);
         ballHitRightPaddle = false;
     }
