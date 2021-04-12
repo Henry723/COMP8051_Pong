@@ -47,7 +47,6 @@
 
 @interface CBox2D : NSObject
 
-@property float xDir;
 @property float yDir;
 @property float playerYDir;
 @property bool gameStart;
@@ -55,7 +54,6 @@
 
 -(void) Update:(float)elapsedTime;  // update the Box2D engine
 -(void) RegisterHit:(NSString *) objectName;// Register when the ball hits the brick
--(void) RegisterHitObstacle;//when ball hits an obstacle body
 -(void *)GetObjectPositions;        // Get the positions of the ball and brick
 
 -(void) LaunchBall;

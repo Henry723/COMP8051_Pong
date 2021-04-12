@@ -36,11 +36,9 @@ class ViewController: GLKViewController {
         
     @IBAction func TapAndHold(_ sender: UILongPressGestureRecognizer) {
         // Disable input if the GameDirector
-    //        float xPos;
         let tapLocation = sender.location(in: sender.view)
             
         let screenSize: CGRect = UIScreen.main.bounds;
-        let xPos : Float = Float(tapLocation.x / screenSize.width);
         let yPos : Float = Float(tapLocation.y / screenSize.height);
             
             
