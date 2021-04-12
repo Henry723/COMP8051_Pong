@@ -46,7 +46,7 @@
 #define GAME_SPEED             5
 
 @interface CBox2D : NSObject
-
+@property int playerScore,aiScore;
 @property float xDir;
 @property float yDir;
 @property float playerYDir;

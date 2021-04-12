@@ -7,6 +7,12 @@ import GLKit
 extension ViewController: GLKViewControllerDelegate {
     func glkViewControllerUpdate(_ controller: GLKViewController) {
         glesRenderer.update()
+        let p: String = String (format: "Player : %i", glesRenderer.box2d.playerScore);
+        PlayerScore.text = p;
+        
+        let a: String = String (format: "AI : %i", glesRenderer.box2d.aiScore);
+        AIScore.text = a;
+        
     }
 }
 
@@ -14,7 +20,9 @@ class ViewController: GLKViewController {
     
     private var context: EAGLContext?
     private var glesRenderer: Renderer!
-        
+    @IBOutlet weak var PlayerScore: UILabel!
+    @IBOutlet weak var AIScore: UILabel!
+    
     private func setupGL() {
         context = EAGLContext(api: .openGLES3)
         EAGLContext.setCurrent(context)
