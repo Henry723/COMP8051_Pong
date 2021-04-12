@@ -47,6 +47,7 @@
 
 @interface CBox2D : NSObject
 
+@property int playerScore,aiScore;
 @property float yDir;
 @property float playerYDir;
 @property bool gameStart;

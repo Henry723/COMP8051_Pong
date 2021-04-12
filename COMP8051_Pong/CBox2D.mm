@@ -96,11 +96,16 @@ public:
 @synthesize yDir, playerYDir;
 @synthesize gameStart;
 @synthesize ball;
+@synthesize playerScore, aiScore;
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
+        
+        playerScore = 0;
+        aiScore = 0;
+        
         // Initialize Box2D
         gravity = new b2Vec2(0.0f, GRAVITY);
         world = new b2World(*gravity);
@@ -302,9 +307,11 @@ public:
     //Check if the ball hit either walls, if true score of the side increase.
     if(ballHitLeftWall){
         ballHitLeftWall = false;
+        aiScore++;
         [self Reset];
     } else if (ballHitRightWall){
         ballHitRightWall = false;
+        playerScore++;
         [self Reset];
     }
         
