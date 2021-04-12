@@ -23,14 +23,8 @@
 
 #define Left_Wall_POS_X            0
 #define Left_Wall_POS_Y            300
-#define Left_Wall_WIDTH            100.0f
+#define Left_Wall_WIDTH            50.0f
 #define Left_Wall_HEIGHT           600.0f
-
-#define BRICK_POS_X            400
-#define BRICK_POS_Y            500
-#define BRICK_WIDTH            100.0f
-#define BRICK_HEIGHT           100.0f
-#define BRICK_WAIT             0.0f
 
 #define BALL_POS_X             SCREEN_BOUNDS_X/2
 #define BALL_POS_Y             SCREEN_BOUNDS_Y/2
@@ -43,11 +37,11 @@
 #define GROUND_ROOF_WIDTH      800.0f
 #define GROUND_ROOF_HEIGHT     10.0f
 
-#define OBSTACLE_POS_X         900
-#define OBSTACLE_POS_Y         300
-#define OBSTACLE_WIDTH         50.0f
-#define OBSTACLE_HEIGHT        100.0f
-#define OBSTACLE_DISTANCE      900
+#define PADDLE_LEFT_POS_X     100
+#define PADDLE_RIGHT_POS_X     SCREEN_BOUNDS_X - 100
+#define PADDLE_POS_Y         300
+#define PADDLE_WIDTH         40.0f
+#define PADDLE_HEIGHT        100.0f
 
 #define GAME_SPEED             5
 
@@ -55,23 +49,17 @@
 
 @property float xDir;
 @property float yDir;
-@property bool scored;
+@property float playerYDir;
+@property bool gameStart;
 @property (nonatomic) Ball * ball;
-
-// @property b2Vec2 _targetVector;
-
--(void) SetTargetVector:(float)posX:(float)posY;
-
-//-(void) GenerateObstacle;
 
 -(void) Update:(float)elapsedTime;  // update the Box2D engine
 -(void) RegisterHit:(NSString *) objectName;// Register when the ball hits the brick
 -(void) RegisterHitObstacle;//when ball hits an obstacle body
 -(void *)GetObjectPositions;        // Get the positions of the ball and brick
 
--(void) InitiateNewJump:(float)posX:(float)posY;
--(void) UpdateJumpTarget:(float)posX:(float)posY;
--(void) LaunchJump;
+-(void) LaunchBall;
+-(void) UpdatePaddle:(float)posY;
 -(void) Reset;
 
 @end

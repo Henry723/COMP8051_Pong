@@ -74,9 +74,9 @@ public:
     b2Vec2 *gravity;
     b2World *world;
 
-    b2Body *theLeftWall, *theRightWall, *theGround, *theBall, *theRoof, *theRightPaddle, *theleftPaddle;
+    b2Body *theLeftWall, *theRightWall, *theGround, *theBall, *theRoof, *theRightPaddle, *theLeftPaddle;
     
-    UserData *ballData, *wallData, *rightPaddleData, *groundData, *leftPaddleData;
+    UserData *ballData, *leftWallData, *rightWallData, *rightPaddleData, *leftPaddleData;
 
     
     CContactListener *contactListener;
@@ -85,15 +85,16 @@ public:
     // You will also need some extra variables here for the logic
     bool ballHitLeftWall, ballHitRightWall;
     bool ballHitLeftPaddle, ballHitRightPaddle;
-    bool ballLaunched;
+    bool ballLaunched, paddleMoved;
+    bool scored;
     bool obstacleHitCleaner;
 }
 @end
 
 @implementation CBox2D
 
-@synthesize xDir, yDir;
-@synthesize scored;
+@synthesize xDir, yDir, playerYDir;
+@synthesize gameStart;
 @synthesize ball;
 
 - (instancetype)init
@@ -108,8 +109,6 @@ public:
         gdBodyDef.type = b2_staticBody;
         gdBodyDef.position.Set(GROUND_ROOF_POS_X, GROUND_ROOF_PADDING);//width, height of the ground
         theGround = world->CreateBody(&gdBodyDef);
-        
-        //ground counts as obstacle, since obstacles are non-harmful objects which the ground can be a part of
         b2PolygonShape gdBox;
         gdBox.SetAsBox(GROUND_ROOF_WIDTH, GROUND_ROOF_HEIGHT);
         theGround->CreateFixture(&gdBox, 0.0f);
@@ -128,20 +127,20 @@ public:
         
         // Set up the brick and ball objects for Box2D
         b2BodyDef leftwallBodyDef;
-        leftwallBodyDef.type = b2_kinematicBody;
+        leftwallBodyDef.type = b2_staticBody;
         leftwallBodyDef.position.Set(Left_Wall_POS_X, Left_Wall_POS_Y);
         theLeftWall = world->CreateBody(&leftwallBodyDef);
         
-        wallData = new UserData(self,@"LeftWall");
+        leftWallData = new UserData(self,@"LeftWall");
         
         if (theLeftWall)
         {
-            theLeftWall->SetUserData((void *)wallData);
+            theLeftWall->SetUserData((void *)leftWallData);
             theLeftWall->SetAwake(false);
-            b2PolygonShape dynamicBox;
-            dynamicBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
+            b2PolygonShape staticBox;
+            staticBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
             b2FixtureDef fixtureDef;
-            fixtureDef.shape = &dynamicBox;
+            fixtureDef.shape = &staticBox;
             fixtureDef.density = 1.0f;
             fixtureDef.friction = 0.3f;
             fixtureDef.restitution = 0.0f;
@@ -150,20 +149,20 @@ public:
         
         // Set up the brick and ball objects for Box2D
         b2BodyDef rightwallBodyDef;
-        rightwallBodyDef.type = b2_kinematicBody;
-        rightwallBodyDef.position.Set(Left_Wall_POS_X+800, Left_Wall_POS_Y);
+        rightwallBodyDef.type = b2_staticBody;
+        rightwallBodyDef.position.Set(SCREEN_BOUNDS_X, Left_Wall_POS_Y);
         theRightWall = world->CreateBody(&rightwallBodyDef);
         
-        wallData = new UserData(self,@"RightWall");
+        rightWallData = new UserData(self,@"RightWall");
         
         if (theRightWall)
         {
-            theRightWall->SetUserData((void *)wallData);
+            theRightWall->SetUserData((void *)rightWallData);
             theRightWall->SetAwake(false);
-            b2PolygonShape dynamicBox;
-            dynamicBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
+            b2PolygonShape staticBox;
+            staticBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
             b2FixtureDef fixtureDef;
-            fixtureDef.shape = &dynamicBox;
+            fixtureDef.shape = &staticBox;
             fixtureDef.density = 1.0f;
             fixtureDef.friction = 0.3f;
             fixtureDef.restitution = 0.0f;
@@ -172,7 +171,6 @@ public:
       
         //ball definition
         ball = [[Ball alloc]init];
-        ball.initialJump = false;
         b2BodyDef ballBodyDef;
         ballBodyDef.type = b2_dynamicBody;
         ballBodyDef.position.Set(BALL_POS_X, BALL_POS_Y);
@@ -195,33 +193,32 @@ public:
             theBall->CreateFixture(&circleFixtureDef);
         }
 
-        //obstacle definition
+        //paddle definition
         b2BodyDef lPaddleBodyDef;
-        lPaddleBodyDef.type = b2_staticBody;
-        lPaddleBodyDef.position.Set(OBSTACLE_POS_X-800, OBSTACLE_POS_Y);
-        theleftPaddle = world->CreateBody(&lPaddleBodyDef);
+        lPaddleBodyDef.type = b2_dynamicBody;
+        lPaddleBodyDef.position.Set(PADDLE_LEFT_POS_X, PADDLE_POS_Y);
+        theLeftPaddle = world->CreateBody(&lPaddleBodyDef);
         
         leftPaddleData = new UserData(self, @"LeftPaddle");
         
-        if (theleftPaddle)
+        if (theLeftPaddle)
         {
-            
-            theleftPaddle->SetUserData((void *)leftPaddleData);
-            theleftPaddle->SetAwake(false);
-            b2PolygonShape staticBox;
-            staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
+            theLeftPaddle->SetUserData((void *)leftPaddleData);
+            theLeftPaddle->SetAwake(false);
+            b2PolygonShape dynamicBox;
+            dynamicBox.SetAsBox(PADDLE_WIDTH/2, PADDLE_HEIGHT/2);
             b2FixtureDef fixtureDef;
-            fixtureDef.shape = &staticBox;
+            fixtureDef.shape = &dynamicBox;
             fixtureDef.density = 1.0f;
-            fixtureDef.friction = 0.3f;
+            fixtureDef.friction = 0.0f;
             fixtureDef.restitution = 0.0f;
-            theleftPaddle->CreateFixture(&fixtureDef);
+            theLeftPaddle->CreateFixture(&fixtureDef);
         }
         
         //obstacle definition
         b2BodyDef rPaddleBodyDef;
-        rPaddleBodyDef.type = b2_staticBody;
-        rPaddleBodyDef.position.Set(OBSTACLE_POS_X-200, OBSTACLE_POS_Y);
+        rPaddleBodyDef.type = b2_dynamicBody;
+        rPaddleBodyDef.position.Set(PADDLE_RIGHT_POS_X, PADDLE_POS_Y);
         theRightPaddle = world->CreateBody(&rPaddleBodyDef);
         
         rightPaddleData = new UserData(self, @"RightPaddle");
@@ -231,12 +228,12 @@ public:
             
             theRightPaddle->SetUserData((void *)rightPaddleData);
             theRightPaddle->SetAwake(false);
-            b2PolygonShape staticBox;
-            staticBox.SetAsBox(OBSTACLE_WIDTH/2, OBSTACLE_HEIGHT/2);
+            b2PolygonShape dynamicBox;
+            dynamicBox.SetAsBox(PADDLE_WIDTH/2, PADDLE_HEIGHT/2);
             b2FixtureDef fixtureDef;
-            fixtureDef.shape = &staticBox;
+            fixtureDef.shape = &dynamicBox;
             fixtureDef.density = 1.0f;
-            fixtureDef.friction = 0.3f;
+            fixtureDef.friction = 0.0f;
             fixtureDef.restitution = 0.0f;
             theRightPaddle->CreateFixture(&fixtureDef);
         }
@@ -244,6 +241,8 @@ public:
         totalElapsedTime = 0;
         ballHitLeftWall = false;
         ballLaunched = false;
+        scored = false;
+        gameStart = false;
     }
     return self;
 }
@@ -259,56 +258,33 @@ public:
 {
     // Check here if we need to launch the ball
     //  and if so, use ApplyLinearImpulse() and SetActive(true)
-    if (ballLaunched)
-    {
-        theBall->SetLinearVelocity(b2Vec2(xDir * BALL_VELOCITY, yDir * BALL_VELOCITY));
+    if(theBall) {
         theBall->SetActive(true);
-        
-        ballLaunched = false;
+    }
+    if(paddleMoved){
+        theLeftPaddle->SetActive(true);
+        theLeftPaddle->SetLinearVelocity(b2Vec2(0, -playerYDir* 1000));
+        paddleMoved = false;
     }
     
-    //Check if the ball hit either walls, if true score of the side increase.
-    if(ballHitLeftWall){
-        ballHitLeftWall = false;
-        scored = true;
-    } else if (ballHitRightWall){
-        ballHitRightWall = false;
-        scored = true;
+    if(theLeftPaddle){
+        theLeftPaddle->SetTransform(b2Vec2(PADDLE_LEFT_POS_X, theLeftPaddle->GetPosition().y), theLeftPaddle->GetAngle());
+        theLeftPaddle->SetAwake(true);
     }
     
-    //in case the ball is not scored on either end, therefore dont update playerposition
-    if(!scored){
-        [ball updatePos:theBall->GetPosition().x :theBall->GetPosition().y];
-    } else {
-        [self Reset];
-    }
-    
-    // If the last collision test was positive,
-    // increase speed
-    if (ballHitLeftPaddle)
-    {    printf("Left ");
-        theBall->ApplyLinearImpulse(b2Vec2(VELOCITY_INCREASE,0), b2Vec2(theBall->GetPosition()), true);
-        ballHitLeftPaddle = false;
-    } else if (ballHitRightPaddle) {
-        printf("Right ");
-        theBall->ApplyLinearImpulse(b2Vec2(-VELOCITY_INCREASE,0), b2Vec2(theBall->GetPosition()), true);
-        ballHitRightPaddle = false;
-    }
-    
-    if(theleftPaddle)
-        theleftPaddle->SetAwake(true);
-
-    if(theRightPaddle)
+    if(theRightPaddle){
+        theRightPaddle->SetTransform(b2Vec2(PADDLE_RIGHT_POS_X,theBall->GetPosition().y), theRightPaddle->GetAngle());
         theRightPaddle->SetAwake(true);
+    }
     
-    //Makes the ground and roof in sync of viewport
+    //Makes the ground and roof in the viewport
     if (theGround){
         theGround->SetTransform(b2Vec2(GROUND_ROOF_POS_X,0), theGround->GetAngle());
         theGround->SetAwake(true);
     }
     
     if (theRoof){
-        theRoof->SetTransform(b2Vec2(GROUND_ROOF_POS_X,SCREEN_BOUNDS_Y), theGround->GetAngle());
+        theRoof->SetTransform(b2Vec2(GROUND_ROOF_POS_X,SCREEN_BOUNDS_Y), theRoof->GetAngle());
         theRoof->SetAwake(true);
     }
     
@@ -320,6 +296,27 @@ public:
         theRightWall->SetTransform(b2Vec2(SCREEN_BOUNDS_X ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
     }
     
+    // If the last collision test was positive,
+    // increase speed
+    if (ballHitLeftPaddle)
+    {    printf("Left ");
+        theBall->ApplyLinearImpulse(b2Vec2(VELOCITY_INCREASE,0), theBall->GetPosition(), true);
+        ballHitLeftPaddle = false;
+    } else if (ballHitRightPaddle) {
+        printf("Right ");
+        theBall->ApplyLinearImpulse(b2Vec2(-VELOCITY_INCREASE,0), theBall->GetPosition(), true);
+        ballHitRightPaddle = false;
+    }
+    
+    //Check if the ball hit either walls, if true score of the side increase.
+    if(ballHitLeftWall){
+        ballHitLeftWall = false;
+        [self Reset];
+    } else if (ballHitRightWall){
+        ballHitRightWall = false;
+        [self Reset];
+    }
+        
     if (world)
     {
         while (elapsedTime >= MAX_TIMESTEP)
@@ -352,78 +349,29 @@ public:
     }
 }
 
--(void) SetTargetVector:(float)posX :(float)posY
-{
-    // Curate ball Pos value to be scaled to screen space.
-    b2Vec2 currentBallPos = theBall->GetPosition();
-    currentBallPos.x = ((currentBallPos.x)/ SCREEN_BOUNDS_X);
-    
-    currentBallPos.y = -((currentBallPos.y / SCREEN_BOUNDS_Y) - 1);
-    
-    // Direction will be the vector between the two curated points.
-    xDir = posX - currentBallPos.x;
-    yDir =  currentBallPos.y - posY;
-    
-}
-
-// Halt current velocity, set initial target position
--(void)InitiateNewJump:(float)posX :(float)posY
-{
-    // Curate ball Pos value to be scaled to screen space.
-    b2Vec2 currentBallPos = theBall->GetPosition();
-    currentBallPos.x = ((currentBallPos.x) / SCREEN_BOUNDS_X);
-    
-    currentBallPos.y = -((currentBallPos.y / SCREEN_BOUNDS_Y) - 1);
-    
-    // Direction will be the vector between the two curated points.
-    xDir = posX - currentBallPos.x;
-    yDir =  currentBallPos.y - posY;
-    
-    // Normalize the values
-    float vectorMagnitude = sqrt((pow(xDir, 2) + pow(yDir, 2)));
-    xDir = xDir / vectorMagnitude;
-    yDir = yDir / vectorMagnitude;
-    
-    printf("New tap, velocity targer %4.2f, %4.2f...\n", xDir, yDir);
-}
-
-// Update current position vector
--(void)UpdateJumpTarget:(float)posX :(float)posY
-{
-    
-    // Curate ball Pos value to be scaled to screen space.
-    b2Vec2 currentBallPos = theBall->GetPosition();
-    currentBallPos.x = ((currentBallPos.x)/ SCREEN_BOUNDS_X);
-    
-    currentBallPos.y = -((currentBallPos.y / SCREEN_BOUNDS_Y) - 1);
-    
-    // Direction will be the vector between the two curated points.
-    
-    xDir = posX - currentBallPos.x;
-    yDir = currentBallPos.y - posY;
-    
-    // Normalize the values
-    float vectorMagnitude = sqrt((pow(xDir, 2) + pow(yDir, 2)));
-    xDir = xDir / vectorMagnitude;
-    yDir = yDir / vectorMagnitude;
-    
-    printf("Updating Velocity Target to %4.2f, %4.2f..\n", xDir, yDir);
-}
-
-//
--(void)LaunchJump
+-(void)LaunchBall
 {
     // Set some flag here for processing later...
+    theBall->SetLinearVelocity(b2Vec2(300, 300));
     ballLaunched = true;
+}
+
+-(void)UpdatePaddle:(float)posY
+{
+    b2Vec2 paddlePos = theLeftPaddle->GetPosition();
+    paddlePos.y = -((paddlePos.y/SCREEN_BOUNDS_Y)-1);
+    playerYDir = posY - paddlePos.y;
+    paddleMoved = true;
 }
 
 //if the ball hits any end goal, the ball and the both paddles should be centered on their initial location.
 -(void)Reset
 {
+    gameStart = false;
     scored = false;
     theBall->SetLinearVelocity(b2Vec2(0,0));
     theBall->SetTransform(b2Vec2(BALL_POS_X,BALL_POS_Y), theBall->GetAngle());
-    theBall->SetAwake(true);
+    //theBall->SetAwake(true);
 }
 
 -(void *)GetObjectPositions
@@ -435,8 +383,8 @@ public:
         (*objPosList)["leftwall"] = theLeftWall->GetPosition();
     if (theRightWall)
         (*objPosList)["rightwall"] = theRightWall->GetPosition();
-    if (theleftPaddle)
-        (*objPosList)["leftpaddle"] = theleftPaddle->GetPosition();
+    if (theLeftPaddle)
+        (*objPosList)["leftpaddle"] = theLeftPaddle->GetPosition();
     if (theRightPaddle)
         (*objPosList)["rightpaddle"] = theRightPaddle->GetPosition();
     if (theGround)

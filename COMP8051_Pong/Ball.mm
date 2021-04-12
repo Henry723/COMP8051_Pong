@@ -9,7 +9,7 @@
 
 @implementation Ball
 
-@synthesize posX, posY, initialJump;
+@synthesize posX, posY;
 
 -(instancetype)init {
     self = [super init];
@@ -25,28 +25,6 @@
 
 -(void) dealloc{
     
-}
-
--(void) checkCollision:(float)positionX:(float)positionY:(float)width:(float)height{
-    
-    if(posX >= positionX - width/2 &&
-        posX <= positionX + width/2){
-
-        if(posY > positionY + height/2){
-            printf("Top \n");
-        }
-        else if(posY < positionY - height/2){
-                    //change the enum for which side its colliding with to the enum
-            printf("Bottom \n");
-        }
-    }
-    else {
-        if(posX < positionX + width/2){
-            printf("Left \n");
-        } else if(posX > positionX - width/2){
-            printf("Right \n");
-        }
-    }
 }
 
 @end

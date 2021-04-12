@@ -273,28 +273,28 @@ enum
         GLfloat vertPos[18];    // 2 triangles x 3 vertices/triangle x 3 coords (x,y,z) per vertex
         int k = 0;
         numLeftPaddleVerts = 0;
-        vertPos[k++] = theLeftPaddle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theLeftPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theLeftPaddle->x - PADDLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y + PADDLE_HEIGHT/2;
         vertPos[k++] = 10;  // z-value is always set to same value since 2D
         numLeftPaddleVerts++;
-        vertPos[k++] = theLeftPaddle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theLeftPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theLeftPaddle->x + PADDLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y + PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numLeftPaddleVerts++;
-        vertPos[k++] = theLeftPaddle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theLeftPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theLeftPaddle->x + PADDLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y - PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numLeftPaddleVerts++;
-        vertPos[k++] = theLeftPaddle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theLeftPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theLeftPaddle->x - PADDLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y + PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numLeftPaddleVerts++;
-        vertPos[k++] = theLeftPaddle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theLeftPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theLeftPaddle->x + PADDLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y - PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numLeftPaddleVerts++;
-        vertPos[k++] = theLeftPaddle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theLeftPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theLeftPaddle->x - PADDLE_WIDTH/2;
+        vertPos[k++] = theLeftPaddle->y - PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numLeftPaddleVerts++;
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);    // Send vertex data to VBO
@@ -330,28 +330,28 @@ enum
         GLfloat vertPos[18];    // 2 triangles x 3 vertices/triangle x 3 coords (x,y,z) per vertex
         int k = 0;
         numRightPaddleVerts = 0;
-        vertPos[k++] = theRightPaddle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theRightPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theRightPaddle->x - PADDLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y + PADDLE_HEIGHT/2;
         vertPos[k++] = 10;  // z-value is always set to same value since 2D
         numRightPaddleVerts++;
-        vertPos[k++] = theRightPaddle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theRightPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theRightPaddle->x + PADDLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y + PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numRightPaddleVerts++;
-        vertPos[k++] = theRightPaddle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theRightPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theRightPaddle->x + PADDLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y - PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numRightPaddleVerts++;
-        vertPos[k++] = theRightPaddle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theRightPaddle->y + OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theRightPaddle->x - PADDLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y + PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numRightPaddleVerts++;
-        vertPos[k++] = theRightPaddle->x + OBSTACLE_WIDTH/2;
-        vertPos[k++] = theRightPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theRightPaddle->x + PADDLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y - PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numRightPaddleVerts++;
-        vertPos[k++] = theRightPaddle->x - OBSTACLE_WIDTH/2;
-        vertPos[k++] = theRightPaddle->y - OBSTACLE_HEIGHT/2;
+        vertPos[k++] = theRightPaddle->x - PADDLE_WIDTH/2;
+        vertPos[k++] = theRightPaddle->y - PADDLE_HEIGHT/2;
         vertPos[k++] = 10;
         numRightPaddleVerts++;
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertPos), vertPos, GL_STATIC_DRAW);    // Send vertex data to VBO
