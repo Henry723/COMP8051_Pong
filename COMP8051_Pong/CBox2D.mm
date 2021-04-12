@@ -93,10 +93,10 @@ public:
 
 @implementation CBox2D
 
-@synthesize xDir, yDir, playerYDir;
+@synthesize yDir, playerYDir;
 @synthesize gameStart;
 @synthesize ball;
-@synthesize playerScore,aiScore;
+@synthesize playerScore, aiScore;
 
 - (instancetype)init
 {
@@ -109,6 +109,10 @@ public:
         // Initialize Box2D
         gravity = new b2Vec2(0.0f, GRAVITY);
         world = new b2World(*gravity);
+        
+        // For brick & ball sample
+        contactListener = new CContactListener();
+        world->SetContactListener(contactListener);
         
         b2BodyDef gdBodyDef;
         gdBodyDef.type = b2_staticBody;
@@ -126,10 +130,6 @@ public:
         rfBox.SetAsBox(GROUND_ROOF_WIDTH, GROUND_ROOF_HEIGHT);// physical box
         theRoof->CreateFixture(&rfBox, 0.0f);
 
-        // For brick & ball sample
-        contactListener = new CContactListener();
-        world->SetContactListener(contactListener);
-        
         // Set up the brick and ball objects for Box2D
         b2BodyDef leftwallBodyDef;
         leftwallBodyDef.type = b2_staticBody;
@@ -141,14 +141,10 @@ public:
         if (theLeftWall)
         {
             theLeftWall->SetUserData((void *)leftWallData);
-            theLeftWall->SetAwake(false);
             b2PolygonShape staticBox;
             staticBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
             b2FixtureDef fixtureDef;
             fixtureDef.shape = &staticBox;
-            fixtureDef.density = 1.0f;
-            fixtureDef.friction = 0.3f;
-            fixtureDef.restitution = 0.0f;
             theLeftWall->CreateFixture(&fixtureDef);
         }
         
@@ -163,14 +159,10 @@ public:
         if (theRightWall)
         {
             theRightWall->SetUserData((void *)rightWallData);
-            theRightWall->SetAwake(false);
             b2PolygonShape staticBox;
             staticBox.SetAsBox(Left_Wall_WIDTH/2, Left_Wall_HEIGHT/2);
             b2FixtureDef fixtureDef;
             fixtureDef.shape = &staticBox;
-            fixtureDef.density = 1.0f;
-            fixtureDef.friction = 0.3f;
-            fixtureDef.restitution = 0.0f;
             theRightWall->CreateFixture(&fixtureDef);
         }
       
@@ -246,7 +238,6 @@ public:
         totalElapsedTime = 0;
         ballHitLeftWall = false;
         ballLaunched = false;
-        scored = false;
         gameStart = false;
     }
     return self;
@@ -261,6 +252,17 @@ public:
 
 -(void)Update:(float)elapsedTime
 {
+    // If the last collision test was positive,
+    // increase speed
+    if (ballHitLeftPaddle)
+    {    //printf("Left ");
+        theBall->ApplyLinearImpulse(b2Vec2(VELOCITY_INCREASE,0), theBall->GetPosition(), true);
+        ballHitLeftPaddle = false;
+    } else if (ballHitRightPaddle) {
+        printf("Right ");
+        theBall->ApplyLinearImpulse(b2Vec2(-VELOCITY_INCREASE,0), theBall->GetPosition(), true);
+        ballHitRightPaddle = false;
+    }
     // Check here if we need to launch the ball
     //  and if so, use ApplyLinearImpulse() and SetActive(true)
     if(theBall) {
@@ -274,12 +276,12 @@ public:
     
     if(theLeftPaddle){
         theLeftPaddle->SetTransform(b2Vec2(PADDLE_LEFT_POS_X, theLeftPaddle->GetPosition().y), theLeftPaddle->GetAngle());
-        theLeftPaddle->SetAwake(true);
+        //theLeftPaddle->SetAwake(true);
     }
     
     if(theRightPaddle){
         theRightPaddle->SetTransform(b2Vec2(PADDLE_RIGHT_POS_X,theBall->GetPosition().y), theRightPaddle->GetAngle());
-        theRightPaddle->SetAwake(true);
+        //theRightPaddle->SetAwake(true);
     }
     
     //Makes the ground and roof in the viewport
@@ -300,18 +302,7 @@ public:
     if(theRightWall){
         theRightWall->SetTransform(b2Vec2(SCREEN_BOUNDS_X ,SCREEN_BOUNDS_Y/2), theRightWall->GetAngle());
     }
-    
-    // If the last collision test was positive,
-    // increase speed
-    if (ballHitLeftPaddle)
-    {    printf("Left ");
-        theBall->ApplyLinearImpulse(b2Vec2(VELOCITY_INCREASE,0), theBall->GetPosition(), true);
-        ballHitLeftPaddle = false;
-    } else if (ballHitRightPaddle) {
-        printf("Right ");
-        theBall->ApplyLinearImpulse(b2Vec2(-VELOCITY_INCREASE,0), theBall->GetPosition(), true);
-        ballHitRightPaddle = false;
-    }
+
     
     //Check if the ball hit either walls, if true score of the side increase.
     if(ballHitLeftWall){
@@ -378,7 +369,9 @@ public:
     scored = false;
     theBall->SetLinearVelocity(b2Vec2(0,0));
     theBall->SetTransform(b2Vec2(BALL_POS_X,BALL_POS_Y), theBall->GetAngle());
-    //theBall->SetAwake(true);
+    theLeftPaddle->SetTransform(b2Vec2(PADDLE_LEFT_POS_X,PADDLE_POS_Y), theLeftPaddle->GetAngle());
+    theRightPaddle->SetTransform(b2Vec2(PADDLE_RIGHT_POS_X,PADDLE_POS_Y), theRightPaddle->GetAngle());
+    theBall->SetAwake(true);
 }
 
 -(void *)GetObjectPositions
