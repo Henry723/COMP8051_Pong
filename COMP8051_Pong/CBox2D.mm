@@ -78,7 +78,7 @@ public:
     
     UserData *ballData, *leftWallData, *rightWallData, *rightPaddleData, *leftPaddleData;
 
-    
+    float aiTimer;
     CContactListener *contactListener;
     CGFloat width, height;
     float totalElapsedTime;
@@ -279,8 +279,18 @@ public:
     }
     
     if(theRightPaddle){
-        theRightPaddle->SetTransform(b2Vec2(PADDLE_RIGHT_POS_X,theBall->GetPosition().y), theRightPaddle->GetAngle());
-        //theRightPaddle->SetAwake(true);
+        theRightPaddle->SetTransform(b2Vec2(PADDLE_RIGHT_POS_X,theRightPaddle->GetPosition().y), theRightPaddle->GetAngle());
+        theRightPaddle->SetAwake(true);
+    }
+    
+    aiTimer += elapsedTime;
+    if(aiTimer >= 2){
+        if(theBall->GetPosition().y > theRightPaddle->GetPosition().y){
+            theRightPaddle->SetLinearVelocity(b2Vec2(0,500));
+        } else{
+            theRightPaddle->SetLinearVelocity(b2Vec2(0,-500));
+        }
+        aiTimer = 0;
     }
     
     //Makes the ground and roof in the viewport
